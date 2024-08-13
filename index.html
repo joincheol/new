@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>대화 상자 예제</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .chat-container {
+            width: 300px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            height: 400px;
+            position: relative; /* 문구를 절대 위치로 배치하기 위해 relative 위치 지정 */
+        }
+
+        .chat-box {
+            flex: 1;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end; /* 오른쪽 정렬 */
+        }
+
+        .message {
+            max-width: 70%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 10px;
+            background-color: #6f42c1; /* 보라색 */
+            color: #fff;
+            text-align: right;
+            word-break: break-word; /* 긴 단어가 줄 바꿈 되도록 */
+        }
+
+        .loading-message {
+            position: absolute;
+            bottom: 60px; /* 입력 박스 위쪽에 위치하도록 조정 */
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.1);
+            color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            display: none; /* 기본적으로 숨김 */
+            z-index: 1; /* 다른 요소 위에 표시 */
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+            position: relative; /* 문구가 이 영역 위에 표시되도록 relative 위치 지정 */
+        }
+
+        .chat-input input {
+            flex: 1;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 5px;
+        }
+
+        .chat-input button {
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            padding: 5px 10px;
+            margin-left: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div id="chatBox" class="chat-box">
+            <!-- 대화 내용이 여기에 표시됩니다 -->
+        </div>
+        <div id="loadingMessage" class="loading-message">잠깐만 기다려 주세요.</div>
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="메시지를 입력하세요..." onkeydown="checkEnter(event)" />
+            <button onclick="sendMessage()">전송</button>
+        </div>
+    </div>
+
+    <script>
+      let new_word="";
+
+        function sendMessage() {
+            var messageInput = document.getElementById('messageInput');
+            var chatBox = document.getElementById('chatBox');
+            var loadingMessage = document.getElementById('loadingMessage');
+            var new_word = messageInput.value.trim(); // 입력된 메시지를 new_word 변수에 저장
+
+            if (new_word) {
+                var messageElement = document.createElement('div');
+                messageElement.className = 'message'; // 스타일 적용
+                messageElement.textContent = new_word; // 변수 사용
+                chatBox.appendChild(messageElement);
+                messageInput.value = '';
+                chatBox.scrollTop = chatBox.scrollHeight; // 스크롤을 채팅 박스의 맨 아래로 이동
+
+                // "잠깐만 기다려 주세요." 문구를 잠깐 표시
+                loadingMessage.style.display = 'block';
+
+                fetch(`http://127.0.0.1:8000/blog?query="${new_word}"`, {
+                  method: "GET",
+                }).then(async (res) => {
+                  console.log(await res.json());
+                  loadingMessage.style.display = 'none'
+                })
+                // setTimeout(() => {
+                //     loadingMessage.style.display = 'none'; // 문구 숨기기
+                // }, 5000); // 5초 후에 숨김
+
+                console.log(new_word);
+            }
+        }
+
+        function checkEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // 엔터키 기본 동작 방지 (줄바꿈 등)
+                sendMessage();
+            }
+        }
+
+    </script>
+</body>
+</html>
